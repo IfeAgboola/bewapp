@@ -1,17 +1,27 @@
-#!flask/bin/python
-import json
-from flask import Flask, Response
-from helloworld.flaskrun import flaskrun
+from flask import Flask, render_template, request, redirect, url_for
 
-application = Flask(__name__)
+app = Flask(__name__)
 
-@application.route('/', methods=['GET'])
-def get():
-    return Response(json.dumps({'Output': 'Hello World'}), mimetype='application/json', status=200)
+# For storing booked slots (in-memory dictionary, replace with a database in a real application)
+booked_slots = {}
 
-@application.route('/', methods=['POST'])
-def post():
-    return Response(json.dumps({'Output': 'Hello World'}), mimetype='application/json', status=200)
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+@app.route('/booking', methods=['GET', 'POST'])
+def booking():
+    if request.method == 'POST':
+        date = request.form['date']
+        time_slot = request.form['time_slot']
+
+        if date not in booked_slots:
+            booked_slots[date] = []
+
+        if time_slot not in booked_slots[date]:
+            booked_slots[date].append(time_slot)
+
+    return render_template('booking.html', booked_slots=booked_slots)
 
 if __name__ == '__main__':
-    flaskrun(application)
+    app.run(debug=True)
